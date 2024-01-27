@@ -19,19 +19,19 @@ export default function RegisterAndLoginForm() {
   }
 
   return (
-    <div className="bg-blue-50 h-screen flex flex-col items-center pt-20">
+    <div className="bg-indigo-200 h-screen flex flex-col items-center pt-20">
 
       <img src={Logo} alt="Logo"/>
 
       <div className="mt-16">
 
-        <form className="w-64 mx-auto" onSubmit={handleSubmit}>
+        <form className="w-80 mx-auto" onSubmit={handleSubmit}>
 
-          <input value={username} onChange={e => setUserName(e.target.value)} type="text" placeholder="username" className="block w-full rounded-sm p-2 mb-2 border"/>
+          <input value={username} onChange={e => setUserName(e.target.value)} type="text" placeholder="username" className="block w-full rounded-sm p-2 mb-2 outline-none border-2 border-gray-400 focus:border-indigo-500 transition-all"/>
 
-          <input value={password} onChange={e => setUserPassword(e.target.value)} type="password" placeholder="password" className="block w-full rounded-sm p-2 mb-2 border"/>
+          <input value={password} onChange={e => setUserPassword(e.target.value)} type="password" placeholder="password" className="block w-full rounded-sm p-2 mb-2 outline-none border-2 border-gray-400 focus:border-indigo-500 transition-all"/>
 
-          <button className="bg-blue-500 text-white block w-full rounded-sm p-2">
+          <button className="bg-indigo-400 text-white font-semibold text-lg tracking-wide block w-full rounded-sm p-2 transition-all hover:bg-indigo-500">
             {isLoginOrRegister === 'register' ? 'Register' : 'Login'}
           </button>
 
@@ -40,9 +40,12 @@ export default function RegisterAndLoginForm() {
 
       <div className="text-center mt-2">
         {isLoginOrRegister === 'register' && (
-          <div>
+          <div className="flex gap-1">
             Already a member? 
-            <button onClick={() => setIsLoginOrRegister('login')}>
+            <button 
+              onClick={() => setIsLoginOrRegister('login')}
+              className="underline text-blue-950 font-semibold"
+            >
               Login here
             </button>
 
@@ -50,9 +53,12 @@ export default function RegisterAndLoginForm() {
         )}
 
         {isLoginOrRegister === 'login' && (
-          <div>
+          <div className="flex gap-1">
             Don't have an account? 
-            <button onClick={() => setIsLoginOrRegister('register')}>
+            <button 
+              onClick={() => setIsLoginOrRegister('register')}
+              className="underline text-blue-950 font-semibold"
+            >
               Register
             </button>
 
