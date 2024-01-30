@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Message = require('./models/Message');
 const WebSocketServer = new require('ws');
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
@@ -41,6 +42,25 @@ mongoose.connect(DB_HOST)
         }
       }
     }
+
+    connection.on('message', async (message) => {
+      const messageData = JSON.parse(message.toString());
+      const {recipient, text} = messageData;
+    
+      if(recipient && text) {
+        const messageDoc = await Message.create({
+          sender: connection.userId,
+          recipient,
+          text
+        });
+        [...wss.clients].filter(c => c.userId === recipient).forEach(c => c.send(JSON.stringify({
+          text, 
+          sender: connection.userId,
+          recipient,
+          id: messageDoc._id,
+        })))
+      }
+    });
 
     [...wss.clients].forEach(client => {
       client.send(JSON.stringify({

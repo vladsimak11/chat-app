@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import {uniqBy} from "lodash";
 import {UserContext} from "./UserContext";
 import Avatar from "./Avatar";
 import Logo from "./Logo";
@@ -6,8 +7,11 @@ import Logo from "./Logo";
 export default function Chat() {
   const [ws, setWs] = useState(null);
   const [onlinePeople, setOnlinePeople] = useState({});
-  const [offlinePeople, setOfflinePeople] = useState({})
+  // const [offlinePeople, setOfflinePeople] = useState({});
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [newMessageText, setNewMessageText] = useState('');
+  const [messages, setMessages] = useState([]);
+
   const {username, id, setId, setUsername} = useContext(UserContext);
 
   useEffect(() => {
@@ -22,22 +26,42 @@ export default function Chat() {
     peopleArray.forEach(({userId,username}) => {
       people[userId] = username;
     });
-    console.log(people);
     setOnlinePeople(people);
   }
 
   function handleMessage(e) {
     const messageData = JSON.parse(e.data);
-    console.log(messageData);
     
     if ('online' in messageData) {
       showOnlinePeople(messageData.online);
+    } else if('text' in messageData) {
+      setMessages(prev => ([...prev, {...messageData}]));
     }
   
   }
 
+  function sendMessage(e) {
+    e.preventDefault();
+
+    ws.send(JSON.stringify({
+      recipient: selectedUserId,
+      text: newMessageText,
+    }));
+
+    setNewMessageText('');
+    setMessages(prev => ([...prev, {
+      text: newMessageText, 
+      sender: id,
+      recipient: selectedUserId,
+      id: Date.now(),
+    }]));
+
+  }
+
   const onlinePeopleExclOurUser = {...onlinePeople};
   delete onlinePeopleExclOurUser[id];
+
+  const messagesWithoutDupes = uniqBy(messages, 'id');
 
   return (
     <div className="flex h-screen">
@@ -68,19 +92,38 @@ export default function Chat() {
               <div>&larr; Select a person from the sidebar</div>
             </div>
           )}
+
+        {!!selectedUserId && (
+          <div>
+            {messagesWithoutDupes.map(message => (
+              <div key={message._id} className={(message.sender === id ? 'pl-6': 'text-left')}>
+                <div className={"text-left inline-block p-2 my-2 rounded-md text-sm " +(message.sender === id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-500')}>
+                  <span className={(message.sender === id && 'font-bold')}>{message.sender === id ? 'ME: ' : ''}</span>{message.text}
+                </div>
+              </div>
+          ))}
+          </div>
+        )}
         </div>
-        <div className="flex gap-2">
+        
+        {!!selectedUserId && (
+          
+          <form className="flex gap-2" onSubmit={sendMessage}>
           <input 
-            type="text" 
+            type="text"
+            value={newMessageText}
+            onChange={e => setNewMessageText(e.target.value)}
             placeholder="Type your message here" 
             className="bg-white flex-grow outline-none border-2 border-gray-400 rounded-md p-2 focus:border-indigo-500 transition-all"
           />
-          <button className="bg-indigo-500 p-2 text-white rounded-md hover:bg-indigo-600 transition-all">
+          <button type="submit" className="bg-indigo-500 p-2 text-white rounded-md hover:bg-indigo-600 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-            </svg>
+          </svg>
           </button>
-        </div>
+          </form>
+        )}
+
       </div>
     </div>
   )
