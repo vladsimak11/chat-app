@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
-const Message = require('./models/Message');
+const { Message } = require("./models/Message");
 const WebSocketServer = new require('ws');
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 dotenv.config();
 
 const app = require('./index');
+
 
 const { DB_HOST, SECRET_KEY } = process.env;
 
@@ -57,7 +58,7 @@ mongoose.connect(DB_HOST)
           text, 
           sender: connection.userId,
           recipient,
-          id: messageDoc._id,
+          _id: messageDoc._id,
         })))
       }
     });

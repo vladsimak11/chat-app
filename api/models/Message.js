@@ -6,6 +6,9 @@ const MessageSchema = new Schema({
   text: String,
 }, {timestamps:true});
 
-const MessageModel = model('Message', MessageSchema);
+const Message = model('message', MessageSchema);
 
-module.exports = MessageModel;
+module.exports = {
+  Message,
+}
+

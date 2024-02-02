@@ -1,9 +1,24 @@
 const { User } = require("../models/User");
+const { Message } = require("../models/Message");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const { SECRET_KEY } = process.env;
+
+async function getUserDataFromRequest(req) {
+  return new Promise((resolve, reject) => {
+    const token = req.cookies?.token;
+    if (token) {
+      jwt.verify(token, SECRET_KEY, {}, (err, userData) => {
+        if (err) throw err;
+        resolve(userData);
+      });
+    } else {
+      reject('no token');
+    }
+  });
+}
 
 const register = async(req, res, next) => { 
   const {username, password} = req.body;
@@ -62,6 +77,21 @@ const login = async(req, res, next) => {
   }
 }
 
+const messages = async(req, res, next) => {
+  try {
+    const {userId} = req.params;
+    const userData = await getUserDataFromRequest(req);
+    const ourUserId = userData.userId;
+    const messages = await Message.find({
+    sender:{$in:[userId, ourUserId]},
+    recipient:{$in:[userId, ourUserId]},
+    }).sort({createdAt: 1});
+    res.json(messages);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const logout = async(req, res, next) => {
   try {
     const {_id} = req.user;
@@ -79,5 +109,6 @@ module.exports = {
   register,
   profile,
   login,
+  messages,
   logout
 }

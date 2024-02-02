@@ -1,8 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {uniqBy} from "lodash";
 import {UserContext} from "./UserContext";
 import Avatar from "./Avatar";
 import Logo from "./Logo";
+import axios from "axios";
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -14,12 +15,23 @@ export default function Chat() {
 
   const {username, id, setId, setUsername} = useContext(UserContext);
 
+  const divUnderMessages = useRef();
+
   useEffect(() => {
+    connectToWs();
+  }, [selectedUserId]);
+
+  function connectToWs() {
     const ws = new WebSocket('ws://localhost:3000');
     setWs(ws);
-    
     ws.addEventListener('message', handleMessage);
-  }, []);
+    ws.addEventListener('close', () => {
+      setTimeout(() => {
+        console.log('Disconnected. Trying to reconnect.');
+        connectToWs();
+      }, 1000);
+    });
+  }
 
   function showOnlinePeople(peopleArray) {
     const people = {};
@@ -53,15 +65,30 @@ export default function Chat() {
       text: newMessageText, 
       sender: id,
       recipient: selectedUserId,
-      id: Date.now(),
+      _id: Date.now(),
     }]));
 
   }
 
+  useEffect(() => {
+    const div = divUnderMessages.current;
+    if (div) {
+      div.scrollIntoView({behavior:'smooth', block:'end'});
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (selectedUserId) {
+      axios.get('/messages/'+selectedUserId).then(res => {
+        setMessages(res.data);
+      });
+    }
+  }, [selectedUserId]);
+
   const onlinePeopleExclOurUser = {...onlinePeople};
   delete onlinePeopleExclOurUser[id];
 
-  const messagesWithoutDupes = uniqBy(messages, 'id');
+  const messagesWithoutDupes = uniqBy(messages, '_id');
 
   return (
     <div className="flex h-screen">
@@ -94,14 +121,17 @@ export default function Chat() {
           )}
 
         {!!selectedUserId && (
-          <div>
-            {messagesWithoutDupes.map(message => (
-              <div key={message._id} className={(message.sender === id ? 'pl-6': 'text-left')}>
-                <div className={"text-left inline-block p-2 my-2 rounded-md text-sm " +(message.sender === id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-500')}>
-                  <span className={(message.sender === id && 'font-bold')}>{message.sender === id ? 'ME: ' : ''}</span>{message.text}
+          <div className="relative h-full">
+            <div className="overflow-y-scroll absolute top-0 left-0 right-0 bottom-2">
+              {messagesWithoutDupes.map(message => (
+                <div key={message._id} className={(message.sender === id ? 'pl-6': 'text-left')}>
+                  <div className={"text-left inline-block p-2 my-2 rounded-md text-sm " +(message.sender === id ? 'bg-indigo-500 text-white' : 'bg-white text-gray-500')}>
+                    <span className={(message.sender === id && 'font-bold')}>{message.sender === id ? 'ME: ' : ''} </span> {message.text}
+                  </div>
                 </div>
-              </div>
-          ))}
+              ))}
+                <div ref={divUnderMessages}></div>
+            </div>
           </div>
         )}
         </div>
