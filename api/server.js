@@ -27,7 +27,31 @@ mongoose.connect(DB_HOST)
   const wss = new WebSocketServer.Server({ server });
 
   wss.on('connection', (connection, req) => {
-    console.log('connection');
+
+    function notifyAboutOnlinePeople() {
+      [...wss.clients].forEach(client => {
+        client.send(JSON.stringify({
+          online: [...wss.clients].map(c => ({userId: c.userId, username: c.username})),
+        }));
+      });
+    }
+
+    connection.isAlive = true;
+
+    connection.timer = setInterval(() => {
+      connection.ping();
+      connection.deathTimer = setTimeout(() => {
+        connection.isAlive = false;
+        clearInterval(connection.timer);
+        connection.terminate();
+        notifyAboutOnlinePeople();
+      }, 1000);
+    }, 2000);
+  
+    connection.on('pong', () => {
+      clearTimeout(connection.deathTimer);
+    });
+
     const cookies = req.headers.cookie;
     if (cookies) {
       const tokenCookieString = cookies.split(';').find(str => str.startsWith('token='));
@@ -63,9 +87,5 @@ mongoose.connect(DB_HOST)
       }
     });
 
-    [...wss.clients].forEach(client => {
-      client.send(JSON.stringify({
-        online: [...wss.clients].map(c => ({userId: c.userId, username: c.username})),
-      }));
-    })
+    notifyAboutOnlinePeople();
   });

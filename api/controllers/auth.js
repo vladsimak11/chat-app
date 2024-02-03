@@ -92,17 +92,29 @@ const messages = async(req, res, next) => {
   }
 };
 
-const logout = async(req, res, next) => {
+const people = async(req, res, next) => {
   try {
-    const {_id} = req.user;
-    await User.findByIdAndUpdate(_id, {token: ""});
-
-    res.status(204).json({ 
-      message: "No Content" 
-    });
+    const users = await User.find({}, {'_id': 1, username: 1});
+    res.json(users);
   } catch (error) {
     next(error);
   }
+};
+
+const logout = async(req, res, next) => {
+  // try {
+  //   const {_id} = req.user;
+  //   await User.findByIdAndUpdate(_id, {token: ""});
+
+  //   res.status(204).json({ 
+  //     message: "No Content" 
+  //   });
+  // } catch (error) {
+  //   next(error);
+  // }
+  res.cookie('token', '', {sameSite:'none', secure:true}).json(
+    'logout'
+  );
 };
 
 module.exports = {
@@ -110,5 +122,6 @@ module.exports = {
   profile,
   login,
   messages,
+  people,
   logout
 }
