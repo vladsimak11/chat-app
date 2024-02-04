@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const authRouter = require('./routes/auth');
 
+app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({

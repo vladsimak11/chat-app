@@ -4,8 +4,10 @@ const WebSocketServer = new require('ws');
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 dotenv.config();
+const fs = require('fs');
 
 const app = require('./index');
+
 
 
 const { DB_HOST, SECRET_KEY } = process.env;
@@ -70,18 +72,34 @@ mongoose.connect(DB_HOST)
 
     connection.on('message', async (message) => {
       const messageData = JSON.parse(message.toString());
-      const {recipient, text} = messageData;
+      const {recipient, text, file} = messageData;
+
+      let filename = null;
+
+      if(file) {
+        console.log('size', file.data.length);
+        const parts = file.name.split('.');
+        const ext = parts[parts.length - 1];
+        filename = Date.now() + '.'+ext;
+        const path = __dirname + '\\uploads\\' + filename;
+        const bufferData = new Buffer(file.data.split(',')[1], 'base64');
+        fs.writeFile(path, bufferData, () => {
+        console.log('file saved:'+path);
+      });
+      }
     
-      if(recipient && text) {
+      if(recipient && (text || file)) {
         const messageDoc = await Message.create({
           sender: connection.userId,
           recipient,
-          text
+          text,
+          file: file ? filename : null,
         });
         [...wss.clients].filter(c => c.userId === recipient).forEach(c => c.send(JSON.stringify({
           text, 
           sender: connection.userId,
           recipient,
+          file: file ? filename : null,
           _id: messageDoc._id,
         })))
       }
