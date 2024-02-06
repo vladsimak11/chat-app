@@ -102,16 +102,16 @@ const people = async(req, res, next) => {
 };
 
 const logout = async(req, res, next) => {
-  // try {
-  //   const {_id} = req.user;
-  //   await User.findByIdAndUpdate(_id, {token: ""});
+  try {
+    const {_id} = req.user;
+    await User.findByIdAndUpdate(_id, {token: ""});
 
-  //   res.status(204).json({ 
-  //     message: "No Content" 
-  //   });
-  // } catch (error) {
-  //   next(error);
-  // }
+    res.status(204).json({ 
+      message: "No Content" 
+    });
+  } catch (error) {
+    next(error);
+  }
   res.cookie('token', '', {sameSite:'none', secure:true}).json(
     'logout'
   );
