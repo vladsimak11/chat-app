@@ -114,13 +114,13 @@ mongoose.connect(DB_HOST)
         const ext = parts[parts.length - 1];
         filename = Date.now() + '.'+ext;
         const path = __dirname + '\\uploads\\' + filename;
-        console.log('before path: '+path);
+        console.log('Before path: '+path);
         const bufferData = Buffer.from(file.data.split(',')[1], 'base64');
         console.log('bufferData: '+bufferData);
         fs.writeFile(path, bufferData, () => {
           console.log('after path: '+path);
         });
-        await uploadToS3(path, filename, mime.lookup(path));
+        uploadToS3(path, filename, mime.lookup(path));
       }
     
       if(recipient && (text || file)) {
