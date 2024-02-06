@@ -14,7 +14,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL,
 }));
 
-app.use('/', authRouter);
+app.use('/api', authRouter);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Not found' })
