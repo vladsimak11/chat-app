@@ -1,5 +1,5 @@
 {
-  "buildCommand": "next build",
+  "buildCommand": "cd client && npm install",
   "outputDirectory": "client/dist",
   "framework": "vite",
   "rewrites": [
