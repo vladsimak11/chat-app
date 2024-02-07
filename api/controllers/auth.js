@@ -67,6 +67,7 @@ const login = async(req, res, next) => {
         jwt.sign({userId:user._id, username}, SECRET_KEY, {}, (err, token) => {
           res.cookie('token', token, {sameSite:'none', secure:true}).json({
             id: user._id,
+            token: token,
           });
         });
       }
