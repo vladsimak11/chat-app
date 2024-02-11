@@ -9,12 +9,7 @@ const authRouter = require('./routes/auth');
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  credentials: true,
-  origin: process.env.CLIENT_URL,
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  optionsSuccessStatus: 200
-}));
+app.use(cors());
 
 app.use('/api', authRouter);
 
