@@ -4,12 +4,17 @@ const cookieParser = require('cookie-parser')
 const cors = require('cors');
 require('dotenv').config();
 
+const { CLIENT_URL} = process.env;
+
 const authRouter = require('./routes/auth');
 
 app.use('/uploads', express.static(__dirname + '/uploads'));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: CLIENT_URL,
+}));
 
 app.use('/api', authRouter);
 
