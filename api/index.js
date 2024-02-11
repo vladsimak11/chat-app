@@ -12,6 +12,8 @@ app.use(cookieParser());
 app.use(cors({
   credentials: true,
   origin: process.env.CLIENT_URL,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 200
 }));
 
 app.use('/api', authRouter);
