@@ -23,3 +23,6 @@ dist-ssr
 *.sw?
 api/uploads/*
 client/.env
+client/.vercel
+client/.node_modules
+
